@@ -1,0 +1,8 @@
+output/
+logs/
+archives/
+.log
+.tar.gz
+.tmp
+.swp
+.DS_Store
