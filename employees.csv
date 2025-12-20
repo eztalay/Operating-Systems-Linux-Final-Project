@@ -4,5 +4,5 @@ employee_id,username,name_surname,department,status
 3,Alp,Alp Deniz Usuğ,HR,terminated
 4,yiğit,Yiğit Emre ünlü,data,terminated
 5,zeynep.sari,Zeynep Sarı,finance,active
-6,burak.yilmaz,Burak Yılmaz,dev,terminated
-7,deniz.arslan,Deniz Arslan,data,active
+6,deniz.arslan,Deniz Arslan,data,active
+7,melis,melis kaya,hr,active
