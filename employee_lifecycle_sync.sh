@@ -1,9 +1,5 @@
-#!/bin/bash
 set -euo pipefail
 
-#######################################
-# CONFIG
-#######################################
 
 BASE_DIR="$(cd "$(dirname "$0")" && pwd)"
 
@@ -25,9 +21,6 @@ declare -A CURRENT_STATUS
 declare -A CURRENT_DEPT
 declare -A CURRENT_NAME
 
-#######################################
-# HELPER
-#######################################
 
 timestamp() {
   date "+%Y-%m-%d %H:%M:%S"
@@ -38,7 +31,7 @@ log() {
 }
 
 run_cmd() {
-  # Artık DRY-RUN YOK: komutlar gerçekten çalışıyor
+
   log "[RUN] $*"
   eval "$@"
 }
@@ -47,10 +40,6 @@ ensure_dirs() {
   mkdir -p "$LOG_DIR" "$REPORT_DIR" "$ARCHIVE_DIR"
   touch "$LOG_FILE"
 }
-
-#######################################
-# CSV OKUMA
-#######################################
 
 load_current_csv() {
   if [[ ! -f "$EMPLOYEE_CSV" ]]; then
@@ -64,7 +53,7 @@ load_current_csv() {
   TMP_TERMINATED_USERS="$(mktemp)"
 
   {
-    # header
+
     read -r _header
 
     while IFS=',' read -r employee_id username name_surname department status; do
@@ -114,20 +103,17 @@ load_last_csv() {
   LAST_USERS_FILE="$TMP_LAST_USERS"
 }
 
-#######################################
-# DEĞİŞİKLİK TESPİTİ
-#######################################
+
 
 detect_changes() {
   TMP_ADDED="$(mktemp)"
   TMP_REMOVED="$(mktemp)"
   TMP_OFFBOARD="$(mktemp)"
 
-  # Added: last'ta yok, current'ta var
   comm -13 "$LAST_USERS_FILE" "$CURRENT_USERS_FILE" > "$TMP_ADDED" || true
-  # Removed: last'ta var, current'ta yok
+
   comm -23 "$LAST_USERS_FILE" "$CURRENT_USERS_FILE" > "$TMP_REMOVED" || true
-  # Offboard: removed + status=terminated
+
   cat "$TMP_REMOVED" "$TERMINATED_USERS_FILE" | sort -u > "$TMP_OFFBOARD"
 
   ADDED_USERS_FILE="$TMP_ADDED"
@@ -139,9 +125,6 @@ detect_changes() {
   log "Detected $(wc -l < "$OFFBOARD_USERS_FILE") users to offboard"
 }
 
-#######################################
-# ONBOARDING
-#######################################
 
 onboard_users() {
   local file="$1"
@@ -173,9 +156,7 @@ onboard_users() {
   done < "$file"
 }
 
-#######################################
-# OFFBOARDING
-#######################################
+
 
 offboard_users() {
   local file="$1"
@@ -206,9 +187,6 @@ offboard_users() {
   done < "$file"
 }
 
-#######################################
-# RAPOR
-#######################################
 
 write_report() {
   log "Writing manager report to $REPORT_FILE"
@@ -229,9 +207,7 @@ write_report() {
   } > "$REPORT_FILE"
 }
 
-#######################################
-# RAPORU MAIL ATMA
-#######################################
+
 
 send_report_email() {
   if [[ -z "${MANAGER_EMAIL:-}" ]]; then
@@ -249,18 +225,14 @@ send_report_email() {
   mail -s "$subject" "$MANAGER_EMAIL" < "$REPORT_FILE"
 }
 
-#######################################
-# SNAPSHOT
-#######################################
+
 
 update_snapshot() {
   cp "$EMPLOYEE_CSV" "$LAST_CSV"
   log "Updated last snapshot at $LAST_CSV"
 }
 
-#######################################
-# MAIN
-#######################################
+
 
 main() {
   ensure_dirs
