@@ -1,3 +1,4 @@
+#!/bin/bash
 set -euo pipefail
 
 
@@ -11,7 +12,7 @@ REPORT_DIR="$OUTPUT_DIR/reports"
 ARCHIVE_DIR="$OUTPUT_DIR/archives"
 LAST_CSV="$OUTPUT_DIR/last_employees.csv"
 
-RUN_ID="$(date "+%Y%m%d_%H%M%S")"
+RUN_ID="$(date "+%Y%m%d_%H%M")"
 LOG_FILE="$LOG_DIR/run_$RUN_ID.log"
 REPORT_FILE="$REPORT_DIR/manager_report_$RUN_ID.txt"
 
@@ -23,7 +24,7 @@ declare -A CURRENT_NAME
 
 
 timestamp() {
-  date "+%Y-%m-%d %H:%M:%S"
+  date "+%Y-%m-%d %H:%M"
 }
 
 log() {
@@ -44,10 +45,12 @@ ensure_dirs() {
 load_current_csv() {
   if [[ ! -f "$EMPLOYEE_CSV" ]]; then
     log "ERROR: employees.csv not found at $EMPLOYEE_CSV"
+    echo
     exit 1
   fi
 
   log "Loading current employees from $EMPLOYEE_CSV"
+  echo
 
   TMP_CURRENT_USERS="$(mktemp)"
   TMP_TERMINATED_USERS="$(mktemp)"
@@ -82,6 +85,7 @@ load_current_csv() {
   TERMINATED_USERS_FILE="$TMP_TERMINATED_USERS"
 
   log "Loaded $(wc -l < "$CURRENT_USERS_FILE") current users"
+  echo
 }
 
 load_last_csv() {
@@ -89,6 +93,7 @@ load_last_csv() {
 
   if [[ -f "$LAST_CSV" ]]; then
     log "Loading last snapshot from $LAST_CSV"
+echo
     tail -n +2 "$LAST_CSV" | while IFS=',' read -r employee_id username _rest; do
       username="$(echo "${username:-}" | tr '[:upper:]' '[:lower:]')"
       [[ -z "$username" ]] && continue
@@ -121,8 +126,11 @@ detect_changes() {
   OFFBOARD_USERS_FILE="$TMP_OFFBOARD"
 
   log "Detected $(wc -l < "$ADDED_USERS_FILE") added users"
+echo
   log "Detected $(wc -l < "$REMOVED_USERS_FILE") removed users"
-  log "Detected $(wc -l < "$OFFBOARD_USERS_FILE") users to offboard"
+echo
+ log "Detected $(wc -l < "$OFFBOARD_USERS_FILE") users to offboard"
+echo
 }
 
 
@@ -190,6 +198,7 @@ offboard_users() {
 
 write_report() {
   log "Writing manager report to $REPORT_FILE"
+echo
 
   {
     echo "Manager Update Report"
@@ -223,6 +232,7 @@ send_report_email() {
   local subject="Employee Lifecycle Report - $RUN_ID"
   log "Sending manager report to $MANAGER_EMAIL"
   mail -s "$subject" "$MANAGER_EMAIL" < "$REPORT_FILE"
+echo
 }
 
 
@@ -230,29 +240,35 @@ send_report_email() {
 update_snapshot() {
   cp "$EMPLOYEE_CSV" "$LAST_CSV"
   log "Updated last snapshot at $LAST_CSV"
+echo
 }
 
 
 
 main() {
   ensure_dirs
-  log "=== Employee Lifecycle Sync started ==="
+  log "~Employee Lifecycle Sync started~"
+  echo
 
   load_current_csv
   load_last_csv
   detect_changes
 
-  log "--- Onboarding phase ---"
+  log "~Onboarding stage~"
+echo
   onboard_users "$ADDED_USERS_FILE"
+echo
 
-  log "--- Offboarding phase ---"
+  log "~ Offboarding stage~"
+echo
   offboard_users "$OFFBOARD_USERS_FILE"
+echo
 
   write_report
   send_report_email
   update_snapshot
 
-  log "=== Employee Lifecycle Sync finished ==="
+  log "~Employee Lifecycle Sync finished~"
 }
 
 main "$@"

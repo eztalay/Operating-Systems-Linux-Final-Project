@@ -1,8 +1,9 @@
 employee_id,username,name_surname,department,status
-1,Ege,Ege Usuğ,dev,active
+1,Ege,Ege Usuğ,dev,terminated
 2,Elif,Elif Zeynep Talay,engineer,active
-3,Alp,Alp Deniz Usuğ,HR,terminated
+3,Alp,Alp Deniz Usuğ,HR,active
 4,yiğit,Yiğit Emre ünlü,data,terminated
 5,zeynep.sari,Zeynep Sarı,finance,active
 6,deniz.arslan,Deniz Arslan,data,active
 7,melis,melis kaya,hr,active
+8,enes,enes zafer,dev,active
